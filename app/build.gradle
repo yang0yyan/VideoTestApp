@@ -32,6 +32,24 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    // 跟externalNativeBuild不能同时使用
+    splits {
+        // 根据ABI配置多个APK。
+        abi {
+            // 允许每个ABI构建多个APK.
+            enable true
+            // 默认情况下，所有ABI都包含在内，因此请使用reset（）并包含以指定我们仅希望针对x86和x86_64的APK。
+
+            // 将Gradle应该为其创建APK的ABI列表重置为无。
+            reset()
+            // 指定Gradle应该为其创建APK的ABI列表。
+            include "armeabi-v7a","arm64-v8a","x86","x86_64"
+
+            // 指定我们是否生成包含所有ABI的通用APK。
+            universalApk false
+        }
+    }
 }
 
 dependencies {

@@ -61,24 +61,19 @@ public class YYMediaCodec implements IYYMediaCodec {
 
     public void setMediaDecodeListener(MediaDecodeListener listener) {
         this.mediaDecodeCallback = listener;
+        getMediaCodecList();
     }
 
-    @Override
-    public void init() {
-        if (null == videoThread) {
-            videoThread = new ChildThread();
-            videoThread.start();
-        }
-        if (null == audioThread) {
-            audioThread = new ChildThread();
-            audioThread.start();
-        }
-        getMediaCodecList();
+    private void init() {
+        videoSupport = 0;
+        audioSupport = 0;
+        createThread();
     }
 
     @Override
     public void readMediaFile(Uri uri) {
         release();
+        init();
         fileUri = uri;
         readMedia(uri);
         if (videoSupport != 1 || audioSupport != 1) return;
@@ -94,6 +89,7 @@ public class YYMediaCodec implements IYYMediaCodec {
         videoMediaCodec.start();
         audioMediaCodec.start();
         startMs = System.currentTimeMillis();
+        mediaDecodeCallback.onVideoStatusChange(true);
     }
 
     @Override
@@ -104,6 +100,14 @@ public class YYMediaCodec implements IYYMediaCodec {
     @Override
     public void stopDecode() {
 
+    }
+
+    @Override
+    public void seekTo(long timeUs) {
+        if(null!=audioMediaExtractor||null!=videoMediaExtractor){
+            audioMediaExtractor.seekTo(timeUs,MediaExtractor.SEEK_TO_CLOSEST_SYNC);
+            videoMediaExtractor.seekTo(timeUs,MediaExtractor.SEEK_TO_CLOSEST_SYNC);
+        }
     }
 
     @Override
@@ -142,6 +146,17 @@ public class YYMediaCodec implements IYYMediaCodec {
             audioMediaExtractor = null;
         }
         Log.d(TAG, "close: 资源释放  音频");
+    }
+
+    private void createThread(){
+        if (null == videoThread) {
+            videoThread = new ChildThread();
+            videoThread.start();
+        }
+        if (null == audioThread) {
+            audioThread = new ChildThread();
+            audioThread.start();
+        }
     }
 
 
@@ -207,7 +222,10 @@ public class YYMediaCodec implements IYYMediaCodec {
         if (mediaFormat.containsKey(MediaFormat.KEY_ROTATION)) {
             rotation = mediaFormat.getInteger(MediaFormat.KEY_ROTATION);
         }
-        int videoSampleRateInHz = mediaFormat.getInteger(MediaFormat.KEY_FRAME_RATE);
+        int videoSampleRateInHz = 0;
+        if (mediaFormat.containsKey(MediaFormat.KEY_FRAME_RATE)) {
+            videoSampleRateInHz = mediaFormat.getInteger(MediaFormat.KEY_FRAME_RATE);
+        }
         int videoWidth = mediaFormat.getInteger(MediaFormat.KEY_WIDTH);
         int videoHeight = mediaFormat.getInteger(MediaFormat.KEY_HEIGHT);
 
@@ -281,6 +299,7 @@ public class YYMediaCodec implements IYYMediaCodec {
      * -----------------------------------------视频------------------------------------------------
      */
     private MediaCodec.Callback videoCallback = new MediaCodec.Callback() {
+
         byte[] data;
 
         @Override
@@ -304,6 +323,8 @@ public class YYMediaCodec implements IYYMediaCodec {
                 releaseVideo();
                 mediaDecodeCallback.logMediaInfo("视频结束");
                 Log.d(TAG, "run: 视频  结束");
+                data = null;
+                mediaDecodeCallback.onVideoStatusChange(false);
                 return;
             }
             if (outBufferInfo.presentationTimeUs / 1000 > System.currentTimeMillis() - startMs) {
@@ -353,7 +374,6 @@ public class YYMediaCodec implements IYYMediaCodec {
                 audioMediaExtractor.advance();
                 inBuffer.clear();
             }
-
         }
 
         @Override
@@ -362,6 +382,7 @@ public class YYMediaCodec implements IYYMediaCodec {
                 codec.releaseOutputBuffer(outIndex, true);
                 Log.d(TAG, "run: 音频  结束");
                 mediaDecodeCallback.logMediaInfo("音频结束");
+                data = null;
                 return;
             }
             if (outBufferInfo.presentationTimeUs / 1000 > System.currentTimeMillis() - startMs) {
@@ -377,6 +398,8 @@ public class YYMediaCodec implements IYYMediaCodec {
                 outBuffer.get(data);
                 mediaDecodeCallback.onAudioOutput(data);
                 outBuffer.clear();
+
+                mediaDecodeCallback.onAudioTimeChange(outBufferInfo.presentationTimeUs);
             }
             codec.releaseOutputBuffer(outIndex, false);
         }
@@ -407,6 +430,15 @@ public class YYMediaCodec implements IYYMediaCodec {
         }
     }
 
+    class TimeThread extends Thread {
+
+        @Override
+        public void run() {
+            super.run();
+
+        }
+    }
+
 
     public interface MediaDecodeListener {
         void readAudioComplete(int sampleRateInHz, int channelConfig, int audioFormat);
@@ -416,6 +448,10 @@ public class YYMediaCodec implements IYYMediaCodec {
         void onVideoOutput(byte[] bytes);
 
         void onAudioOutput(byte[] bytes);
+
+        void onAudioTimeChange(long time);
+
+        void onVideoStatusChange(boolean status);
 
         void logMediaInfo(String msg);
     }

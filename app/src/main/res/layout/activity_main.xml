@@ -67,7 +67,10 @@
                 android:id="@+id/seekBar"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:maxHeight="4dp"
+                android:minHeight="4dp"
+                android:progressDrawable="@drawable/seekbar_progress_drawable"/>
 
             <TextView
                 android:id="@+id/tv_time_progress"

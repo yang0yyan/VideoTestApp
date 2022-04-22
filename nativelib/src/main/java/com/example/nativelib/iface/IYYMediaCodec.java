@@ -4,8 +4,6 @@ import android.net.Uri;
 
 public interface IYYMediaCodec {
 
-    void init();
-
     void readMediaFile(Uri uri);
 
     void startDecode();
@@ -13,6 +11,8 @@ public interface IYYMediaCodec {
     void pauseDecode();
 
     void stopDecode();
+
+    void seekTo(long timeUs);
 
     void release();
 }

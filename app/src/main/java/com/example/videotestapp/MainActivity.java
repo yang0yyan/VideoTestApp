@@ -7,10 +7,12 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import androidx.annotation.Keep;
@@ -57,6 +59,24 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         binding.clSurfaceWindow.setOnClickListener(this);
         binding.ivFullScreen.setOnClickListener(this);
         binding.ivPlay.setOnClickListener(this);
+
+        binding.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                StringBuilder builder = new StringBuilder().append(TimeUtil.microsecondToClock(progress, 0)).append("/").append(TimeUtil.microsecondToClock(totalTime, 0));
+                binding.tvTimeProgress.setText(builder.toString());
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                yyPlayer.seekTo(seekBar.getProgress());
+            }
+        });
 
 
         int mCurrentOrientation = getResources().getConfiguration().orientation;
@@ -120,7 +140,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         }
         binding.surface.getHolder().addCallback(callback);
         setTime();
-
     }
 
     @Override
@@ -221,12 +240,29 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     @Override
     public void onPlayStatusChanged(boolean status) {
-
+        binding.ivPlay.post(new Runnable() {
+            @Override
+            public void run() {
+                if(!status){
+                    binding.ivPlay.setImageResource(R.drawable.play_icon);
+                }else{
+                    binding.ivPlay.setImageResource(R.drawable.pause_icon);
+                }
+            }
+        });
     }
 
     @Override
     public void onProgressChanged(long us) {
-
+        Log.d(TAG, "onProgressChanged: "+us+";"+totalTime);
+        binding.tvTimeProgress.post(new Runnable() {
+            @Override
+            public void run() {
+                StringBuilder builder = new StringBuilder().append(TimeUtil.microsecondToClock(us, 0)).append("/").append(TimeUtil.microsecondToClock(totalTime, 0));
+                binding.tvTimeProgress.setText(builder.toString());
+                binding.seekBar.setProgress((int) us);
+            }
+        });
     }
 
     @Override
@@ -238,6 +274,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     private void setTime() {
         StringBuilder builder = new StringBuilder().append(TimeUtil.microsecondToClock(currentTime, 0)).append("/").append(TimeUtil.microsecondToClock(totalTime, 0));
         binding.tvTimeProgress.setText(builder.toString());
+        binding.seekBar.setMax((int) totalTime);
+        binding.seekBar.setProgress((int) currentTime);
     }
 
     // 设置屏幕尺寸

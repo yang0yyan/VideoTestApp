@@ -1,0 +1,39 @@
+Android ABI：
+    Android目前支持以下七种ABI：armeabi、armeabi-v7a、arm64-v8a、x86、x86_64、mips、mips64。
+
+NDK支持的ABI：
+    NDK以前支持mips，mips64，armeabi，但在NDK r17 移除了对这些ABI的支持。
+
+    ABI             支持的指令集
+
+    armeabi         ARMV5TE和更高版本，Thumb-1
+    armeabi-v7a     armeabi,Thumb-2,VFPv3-D16
+    arm64-v8a       AArch64
+    x86             x86(IA-32),MMX,SSE2/3,SSSE3
+    x86_64          x86-64,MMX
+
+    因为NDK向前兼容，推荐使用app的minsdkVersion对应的编译平台，而不是最新。
+
+ABI与CPU：
+    大多数CPU都支持多种ABI，但是为了获得最佳性能，最好使用CPU的主要ABI
+
+    cpu         主要ABI          支持的ABI
+
+    RAMv5       armeabi         armeabi
+    RAMv7       armeabi-v7a     armeabi,armeabi-v7a
+    RAMv8       arm64-v8a       armeabi,armeabi-v7a,arm64-v8aABI
+    x86         x86             armeabi,armeabi-v7a,x86
+    x86_64      x86_64          armeabi,x86,x86_64
+
+
+
+
+
+
+
+
+
+
+
+
+

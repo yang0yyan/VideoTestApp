@@ -11,7 +11,7 @@ public class YYPlayer implements IYYPlayer, YYMediaCodec.MediaDecodeListener {
     Context context;
     private YYMediaCodec mediaCodec;
     private YYAudioTrack audioTrack;
-    private YYCamera camera;
+//    private YYCamera camera;
 
     public YYPlayer(Context context) {
         this.context = context;
@@ -20,12 +20,11 @@ public class YYPlayer implements IYYPlayer, YYMediaCodec.MediaDecodeListener {
     public void init() {
         mediaCodec = new YYMediaCodec(context);
         mediaCodec.setMediaDecodeListener(this);
-        mediaCodec.init();
         audioTrack = new YYAudioTrack();
 
-        camera = new YYCamera(context);
-        camera.setMediaDecodeListener(this);
-        camera.init();
+//        camera = new YYCamera(context);
+//        camera.setMediaDecodeListener(this);
+//        camera.init();
     }
 
     @Override
@@ -38,6 +37,16 @@ public class YYPlayer implements IYYPlayer, YYMediaCodec.MediaDecodeListener {
         mediaCodec.startDecode();
         audioTrack.play();
 //        IMediaPlayer.playAudio();
+    }
+
+    @Override
+    public void seekTo(long timeUs) {
+        mediaCodec.seekTo(timeUs);
+    }
+
+    @Override
+    public void playStateChange(int state) {
+
     }
 
 
@@ -55,12 +64,12 @@ public class YYPlayer implements IYYPlayer, YYMediaCodec.MediaDecodeListener {
     public void release() {
         mediaCodec.release();
         audioTrack.release();
-        camera.release();
+//        camera.release();
 //        IMediaPlayer.releaseAudio();
     }
 
     public void opC(){
-        camera.open();
+//        camera.open();
     }
 
     private MediaStatusListener listener;
@@ -91,6 +100,16 @@ public class YYPlayer implements IYYPlayer, YYMediaCodec.MediaDecodeListener {
     public void onAudioOutput(byte[] bytes) {
 //        IMediaPlayer.writeAudio(bytes);
         audioTrack.write(bytes);
+    }
+
+    @Override
+    public void onAudioTimeChange(long time) {
+        listener.onProgressChanged( time);
+    }
+
+    @Override
+    public void onVideoStatusChange(boolean status) {
+        listener.onPlayStatusChanged(status);
     }
 
     @Override

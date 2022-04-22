@@ -9,6 +9,9 @@ public interface IYYPlayer {
 
     void startPlay();
 
+    void seekTo(long timeUs);
+
+    void playStateChange(int state);
     /**
      * 设置需要显示的布局
      *
