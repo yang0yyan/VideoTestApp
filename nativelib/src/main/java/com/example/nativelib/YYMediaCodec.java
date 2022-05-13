@@ -10,7 +10,6 @@ import android.media.MediaCodecList;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -89,7 +88,7 @@ public class YYMediaCodec implements IYYMediaCodec {
         videoMediaCodec.start();
         audioMediaCodec.start();
         startMs = System.currentTimeMillis();
-        mediaDecodeCallback.onVideoStatusChange(true);
+        mediaDecodeCallback.onVideoStatusChange(false);
     }
 
     @Override
@@ -104,9 +103,9 @@ public class YYMediaCodec implements IYYMediaCodec {
 
     @Override
     public void seekTo(long timeUs) {
-        if(null!=audioMediaExtractor||null!=videoMediaExtractor){
-            audioMediaExtractor.seekTo(timeUs,MediaExtractor.SEEK_TO_CLOSEST_SYNC);
-            videoMediaExtractor.seekTo(timeUs,MediaExtractor.SEEK_TO_CLOSEST_SYNC);
+        if (null != audioMediaExtractor || null != videoMediaExtractor) {
+            audioMediaExtractor.seekTo(timeUs, MediaExtractor.SEEK_TO_CLOSEST_SYNC);
+            videoMediaExtractor.seekTo(timeUs, MediaExtractor.SEEK_TO_CLOSEST_SYNC);
         }
     }
 
@@ -148,7 +147,7 @@ public class YYMediaCodec implements IYYMediaCodec {
         Log.d(TAG, "close: 资源释放  音频");
     }
 
-    private void createThread(){
+    private void createThread() {
         if (null == videoThread) {
             videoThread = new ChildThread();
             videoThread.start();
@@ -245,7 +244,7 @@ public class YYMediaCodec implements IYYMediaCodec {
 //        } else if (rotation == 90) {
 //            mediaDecodeCallback.setSurfaceViewLayoutParams(videoHeight, videoWidth);
 //        }
-        mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar);
+        mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
         int colorFormat = mediaFormat.getInteger(MediaFormat.KEY_COLOR_FORMAT);
         mediaDecodeCallback.logMediaInfo("videoSampleRateInHz: " + videoSampleRateInHz + "; videoWidth:" + videoWidth + "; videoHeight:" + videoHeight + "; rotation:" + rotation + "; colorFormat:" + colorFormat);
 
@@ -324,7 +323,7 @@ public class YYMediaCodec implements IYYMediaCodec {
                 mediaDecodeCallback.logMediaInfo("视频结束");
                 Log.d(TAG, "run: 视频  结束");
                 data = null;
-                mediaDecodeCallback.onVideoStatusChange(false);
+                mediaDecodeCallback.onVideoStatusChange(true);
                 return;
             }
             if (outBufferInfo.presentationTimeUs / 1000 > System.currentTimeMillis() - startMs) {

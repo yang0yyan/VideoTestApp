@@ -45,6 +45,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     private int videoHeight = 0;
     private long currentTime = 0;
     private long totalTime = 0;
+    private boolean isPause = true;
 
     @Override
     protected View getLayoutId() {
@@ -140,6 +141,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         }
         binding.surface.getHolder().addCallback(callback);
         setTime();
+        onPlayStatusChanged(isPause);
     }
 
     @Override
@@ -243,13 +245,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         binding.ivPlay.post(new Runnable() {
             @Override
             public void run() {
-                if(!status){
+                if(status){
                     binding.ivPlay.setImageResource(R.drawable.play_icon);
                 }else{
                     binding.ivPlay.setImageResource(R.drawable.pause_icon);
                 }
             }
         });
+        isPause = status;
     }
 
     @Override
@@ -260,6 +263,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             public void run() {
                 StringBuilder builder = new StringBuilder().append(TimeUtil.microsecondToClock(us, 0)).append("/").append(TimeUtil.microsecondToClock(totalTime, 0));
                 binding.tvTimeProgress.setText(builder.toString());
+                currentTime = us;
                 binding.seekBar.setProgress((int) us);
             }
         });
